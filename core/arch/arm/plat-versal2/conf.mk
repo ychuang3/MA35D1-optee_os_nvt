@@ -1,0 +1,143 @@
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Copyright (c) 2023-2026, Advanced Micro Devices, Inc. All rights reserved.
+#
+
+PLATFORM_FLAVOR ?= generic
+
+include core/arch/arm/cpu/cortex-armv8-0.mk
+
+CFG_MMAP_REGIONS ?= 24
+
+# Disable Non-Standard Crypto Algorithms
+$(call force,CFG_CRYPTO_SM2_PKE,n)
+$(call force,CFG_CRYPTO_SM2_DSA,n)
+$(call force,CFG_CRYPTO_SM2_KEP,n)
+$(call force,CFG_CRYPTO_SM3,n)
+$(call force,CFG_CRYPTO_SM4,n)
+
+# platform does not support paging; explicitly disable CFG_WITH_PAGER
+$(call force,CFG_WITH_PAGER,n)
+
+# Platform specific configurations
+$(call force,CFG_SECURE_TIME_SOURCE_CNTPCT,y)
+$(call force,CFG_WITH_ARM_TRUSTED_FW,y)
+$(call force,CFG_TEE_CORE_NB_CORE,8)
+$(call force,CFG_ARM_GICV3,y)
+$(call force,CFG_PL011,y)
+$(call force,CFG_GIC,y)
+$(call force,CFG_DT,y)
+
+CFG_CORE_RESERVED_SHM	?= n
+CFG_CORE_DYN_SHM	?= y
+CFG_WITH_STATS		?= y
+CFG_ARM64_core		?= y
+CFG_AUTO_MAX_PA_BITS	?= y
+
+# Enable ARM Crypto Extensions(CE)
+CFG_CRYPTO_WITH_CE ?= y
+
+# Define the number of cores per cluster used in calculating core position.
+# The cluster number is shifted by this value and added to the core ID,
+# so its value represents log2(cores/cluster).
+# For AMD Versal Gen 2 there are 4 clusters and 2 cores per cluster.
+$(call force,CFG_CORE_CLUSTER_SHIFT,1)
+
+# Detect the cluster shift at runtime from the DTB instead of relying
+# solely on the compile-time CFG_CORE_CLUSTER_SHIFT above, so a single
+# binary can support Versal Gen 2 variants with a different core/cluster
+# layout. Falls back to CFG_CORE_CLUSTER_SHIFT if detection fails.
+CFG_DYN_CLUSTER_SHIFT ?= y
+
+# By default optee_os is located at the following location.
+# This range to contain optee_os, TEE RAM and TA RAM.
+# Default size is 128MB.
+CFG_TZDRAM_START   ?= 0x1800000
+CFG_TZDRAM_SIZE    ?= 0x8000000
+
+# Maximum size of the Device Tree Blob to accommodate
+# device tree with additional nodes.
+CFG_DTB_MAX_SIZE ?= 0x200000
+
+# Reserved VA space for late/dynamic mappings (transfer list, ASU, etc.)
+# Default ARM value (10MB) is not enough once the transfer list (6MB) is
+# held mapped for most of boot alongside other dynamic IO_SEC mappings.
+CFG_RESERVED_VASPACE_SIZE ?= (24 * 1024 * 1024)
+
+# Console selection
+# 0 : UART0[pl011, pl011_0] (default)
+# 1 : UART1[pl011_1]
+CFG_CONSOLE_UART ?= 0
+
+# PS GPIO Controller configuration.
+CFG_AMD_PS_GPIO ?= n
+
+# AMD PMC Specific config to check PMC FW version.
+CFG_AMD_PMC_SUPPORT ?= y
+
+# AMD ASU Specific configs
+CFG_AMD_ASU_SUPPORT ?= y
+
+ifeq ($(CFG_AMD_ASU_SUPPORT),y)
+CFG_AMD_APU_LCL_IPI_ID ?= 0x0004
+# Current HASH engine does not support partial state copy operation. Any
+# operation from REE involving state copy can crash the OS when driver
+# is enabled.
+CFG_AMD_ASU_HASH ?= n
+ifeq ($(CFG_AMD_ASU_HASH),y)
+$(warning WARNING: ASU HASH engine do not support partial state copy operations)
+$(warning WARNING: Any attempt by the REE to perform a state copy operation \
+  will result in a crash of the TEE.)
+# HMAC is merged into asu_hash.c and shares the SHA engine infrastructure.
+CFG_AMD_ASU_HMAC ?= n
+endif
+
+CFG_AMD_ASU_ECC ?= y
+
+# ASU TRNG driver configuration
+CFG_AMD_ASU_TRNG ?= y
+
+# When ASU TRNG is enabled, use it as the RNG source and enable the HWRNG
+# PTA for Linux kernel integration. When it is disabled, leave
+# CFG_WITH_SOFTWARE_PRNG untouched so the generic default selects the
+# software PRNG automatically.
+ifeq ($(CFG_AMD_ASU_TRNG),y)
+CFG_HWRNG_PTA ?= y
+CFG_HWRNG_QUALITY ?= 1024
+
+# core/pta/hwrng.c only works with a hardware RNG; disable the software
+# PRNG whenever the HWRNG PTA is enabled.
+ifeq ($(CFG_HWRNG_PTA),y)
+$(call force,CFG_WITH_SOFTWARE_PRNG,n)
+endif
+endif
+
+ifeq ($(CFG_RPMB_FS),y)
+$(call force,CFG_AMD_ASU_HUK,y)
+endif
+
+CFG_AMD_ASU_CIPHER ?= y
+CFG_AMD_ASU_RSA ?= y
+
+# Current authenc engine does not support partial state copy operation.
+# Any operation from REE involving state copy can crash the OS when
+# driver is enabled.
+CFG_AMD_ASU_AUTHENC ?= n
+ifeq ($(CFG_AMD_ASU_AUTHENC),y)
+$(warning WARNING: ASU authenc engine do not support partial state copy operations)
+$(warning WARNING: Any attempt by the REE to perform a state copy operation \
+  will result in a crash of the TEE.)
+# CMAC is merged into asu_authenc.c and shares the asu_aes_dev engine lock
+# with the authenc (GCM/CCM) driver. This serialises CMAC and authenc
+# operations on the same underlying AES hardware engine, preventing
+# concurrent access.
+CFG_AMD_ASU_CMAC ?= n
+endif
+endif
+
+ifeq ($(CFG_AMD_PS_GPIO),y)
+$(call force,CFG_MAP_EXT_DT_SECURE,y)
+$(call force,CFG_DRIVERS_GPIO,y)
+endif
+
+CFG_CORE_HEAP_SIZE ?= 262144
