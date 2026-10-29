@@ -15,12 +15,14 @@
 - Analysis: the official remote tag and GitHub API both resolve to source commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`; the local baseline tree matches that commit exactly.
 - Status: DOCUMENTED; official repository identity and object IDs verified, full PGP trust-chain verification unavailable.
 
-## MI-003: MA35 build environment not yet confirmed
+## MI-003: MA35 build environment
 
 - Affected patches: all.
-- Symptom: exact cross-compiler path and historical build command have not yet been established.
-- Proposed resolution: inspect the existing MA35 BSP/build workspace and reuse its toolchain without modifying external repositories.
-- Status: OPEN.
+- Resolution: reused GCC 12.3.0 from
+  `/home/osboxes/buildroot/ma35d1/upstream/output/host/bin/aarch64-nuvoton-linux-gnu-`.
+  Builds use `PLATFORM=ma35`, the applicable `PLATFORM_FLAVOR`, and
+  `CFG_WERROR=y`; no external repository was modified.
+- Status: RESOLVED; MA35D1, MA35D0 and MA35H0 compilation passed for `1474c02`.
 
 ## MI-004: Hardware validation environment not yet established
 

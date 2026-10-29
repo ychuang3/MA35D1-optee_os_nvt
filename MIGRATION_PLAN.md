@@ -10,6 +10,7 @@
 - Target upstream commit: `f54190f22611dd5ad5d22546fd4209aa100f56bd`
 - Local target baseline: `c747f81f08dacfd0559d9f38e19f8032f1ab5cee`
 - Migration branch: `ma35d1-v4.11-migration`
+- MA35 cross-compiler: GCC 12.3.0 from the existing Buildroot host tools
 
 The source snapshot is a root commit with no upstream parent. Its provenance is therefore reconstructed by comparing its Git tree directly with `6b5d112`. That comparison contains 22 changed paths: 5,110 insertions and 254 deletions.
 
@@ -36,4 +37,4 @@ Keep `core/arch/arm/plat-ma35` and migrate one original commit at a time. Adapt 
 - TSI uses an embedded firmware patch and fixed secure-SRAM addresses.
 - Crypto PTAs consume normal-world supplied register maps and physical addresses.
 - Existing HUK fallback behavior and PTA visibility must be preserved unless a separately approved security change is required.
-- Hardware validation and the exact MA35 cross-toolchain are not yet confirmed.
+- Hardware validation is not yet available; compilation must not be treated as boot or functional success.

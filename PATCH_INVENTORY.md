@@ -4,20 +4,27 @@ Status values are `PENDING`, `IN PROGRESS`, `DONE`, or `BLOCKED`. Classification
 
 ## Root Snapshot: 1736f59
 
+Migrated as `1474c02` (`plat-ma35: add MA35D1/D0/H0 support`).
+
 | ID | Area / files | Purpose | Class | Dependencies | Status |
 |---|---|---|---|---|---|
-| R01 | `plat-ma35/conf.mk`, `platform_config.h`, `sub.mk` | Add MA35D1/D0/H0 platform configuration, DRAM layout, peripheral addresses and build integration | ADAPT | v4.11 ARM platform config | PENDING |
-| R02 | `plat-ma35/main.c` | Register secure/non-secure mappings, initialize TSI, load its patch, provide console and HUK | ADAPT | R01, R03, R04 | PENDING |
-| R03 | `ma35_uart.[ch]`, `core/drivers/sub.mk` | Add the MA35 UART console driver | ADAPT | R01 | PENDING |
-| R04 | `tsi_cmd.[ch]`, `tsi_patch.c`, `whc.h` | Implement WHC-based TSI commands and embed the MA35D1 TSI patch | ADAPT | R01 memory map | PENDING |
-| R05 | `pta/crypto_pta*` | Expose MA35 AES, SHA, ECC and RSA services using TSI or direct hardware | ADAPT | R01, R04 | PENDING |
-| R06 | `pta/ks_pta*` | Expose key-store and OTP operations using TSI or direct hardware | ADAPT | R01, R04 | PENDING |
-| R07 | `pta/trng_pta*` | Expose MA35 TRNG initialization and random data | ADAPT | R01, R04 | PENDING |
-| R08 | top-level `Makefile` | Change the global default platform from `vexpress` to `ma35` | DROP | None | PENDING |
-| R09 | `.checkpatch.conf` | Remove the upstream `CFG_` Kconfig-prefix check | DROP | None | PENDING |
-| R10 | Mbed TLS `.uncrustify.cfg` | Delete an upstream formatting configuration file | DROP | None | PENDING |
+| R01 | `plat-ma35/conf.mk`, `platform_config.h`, `sub.mk` | Add MA35D1/D0/H0 platform configuration, DRAM layout, peripheral addresses and build integration | ADAPT | v4.11 ARM platform config | DONE |
+| R02 | `plat-ma35/main.c` | Register secure/non-secure mappings, initialize TSI, load its patch, provide console and HUK | ADAPT | R01, R03, R04 | DONE |
+| R03 | `ma35_uart.[ch]`, `core/drivers/sub.mk` | Add the MA35 UART console driver | ADAPT | R01 | DONE |
+| R04 | `tsi_cmd.[ch]`, `tsi_patch.c`, `whc.h` | Implement WHC-based TSI commands and embed the MA35D1 TSI patch | ADAPT | R01 memory map | DONE |
+| R05 | `pta/crypto_pta*` | Expose MA35 AES, SHA, ECC and RSA services using TSI or direct hardware | ADAPT | R01, R04 | DONE |
+| R06 | `pta/ks_pta*` | Expose key-store and OTP operations using TSI or direct hardware | ADAPT | R01, R04 | DONE |
+| R07 | `pta/trng_pta*` | Expose MA35 TRNG initialization and random data | ADAPT | R01, R04 | DONE |
+| R08 | top-level `Makefile` | Change the global default platform from `vexpress` to `ma35` | DROP | None | DONE |
+| R09 | `.checkpatch.conf` | Remove the upstream `CFG_` Kconfig-prefix check | DROP | None | DONE |
+| R10 | Mbed TLS `.uncrustify.cfg` | Delete an upstream formatting configuration file | DROP | None | DONE |
 
 R08-R10 are source-snapshot artifacts unrelated to MA35 runtime support. The target will retain the v4.11 upstream versions and use explicit `PLATFORM=ma35` builds.
+
+Root validation: all three flavors compile with `CFG_WERROR=y`; checkpatch
+reports 0 errors (legacy warnings retained); TSI payload SHA-256 is
+`c329e7001387389e5f9118c441b100146696ea47fd9352ffd588ec3f2f67e37d`.
+Boot and hardware functionality are not tested.
 
 ## Follow-up Commits
 
