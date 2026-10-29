@@ -6,7 +6,7 @@
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: port `77be1f8` (conditional TSI patch loading)
+- Next action: port `f70a4de` (avoid repeated TSI initialization)
 
 ## Progress
 
@@ -19,7 +19,7 @@
 | All follow-up commits inventoried | PASS |
 | Dedicated migration branch created | PASS |
 | Root snapshot migrated | PASS |
-| Follow-up commits migrated | NOT TESTED |
+| Follow-up commits migrated | IN PROGRESS (1/13) |
 
 ## Validation
 
@@ -35,10 +35,11 @@
 ## Completed Commits
 
 - `1474c02` — port root snapshot `1736f59`; MA35D1/D0/H0 build PASS.
+- `e704772` — port `77be1f8`; conditional TSI patch loading; all flavors build PASS.
 
 ## Next Actions
 
-1. Port `77be1f8` and confirm TSI patch loading is gated by hardware presence.
-2. Review both TSI and non-TSI paths without changing external repositories.
+1. Port `f70a4de` and review repeated initialization behavior.
+2. Continue reviewing both TSI and non-TSI paths without changing external repositories.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.
