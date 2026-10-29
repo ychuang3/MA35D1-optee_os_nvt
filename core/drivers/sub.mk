@@ -103,6 +103,7 @@ srcs-$(CFG_SEMIHOSTING_CONSOLE) += semihosting_console.c
 srcs-$(CFG_FFA_CONSOLE) += ffa_console.c
 srcs-$(CFG_OPENEDGES_OMC) += openedges_omc.c
 srcs-$(CFG_SUNXI_SID) += sunxi_sid.c
+srcs-$(CFG_MA35_UART) += ma35_uart.c
 
 subdirs-y += crypto
 subdirs-$(CFG_BNXT_FW) += bnxt
