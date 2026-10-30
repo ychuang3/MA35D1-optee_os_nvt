@@ -51,11 +51,13 @@
 
 ## MI-007: P06 fixed secure-SRAM buffer lacks bounds and serialization
 
-- Affected patch: `5c70df00ffcbf43ac91392b7d45b14f7edbf1cdd`.
+- Affected patches: `5c70df00ffcbf43ac91392b7d45b14f7edbf1cdd`
+  and `e2dbb45a048a10e7761f490ca38b533b70c012b0`.
 - Symptom: the TRNG PTA passes caller-controlled `rq_size` to an 8 KiB fixed
   buffer at `0x28023000` without an upper bound. AES and TRNG also share this
   buffer without cross-PTA serialization, and TRNG copies output before checking
-  the TSI command result.
+  the TSI command result. P09's key-store command also uses the shared buffer to
+  seed its TSI PRNG operation.
 - Analysis: requests larger than `TSI_CMD_BUFF_SIZE` can make TSI write beyond
   the registered secure SRAM region. Concurrent AES/TRNG operations can overwrite
   each other's command data. The final v4.2 source does not correct these cases.
@@ -68,7 +70,7 @@
   platform passes bring-up and basic functional testing.
 - Status: DEFERRED; tracked for post-bring-up security review. This is not a
   claim that the behavior is safe. Historical behavior was migrated in
-  `ea3523c`.
+  `ea3523c` and P09 was migrated in `86f4f5f`.
 
 ## MI-008: P07 SHA buffer and normal-memory mapping assumptions
 
