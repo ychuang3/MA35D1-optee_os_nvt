@@ -22,6 +22,14 @@
 #define USE_GEN_NONCE
 #define TRNG_BUSY_TIMEOUT	2000
 
+#if defined(PLATFORM_FLAVOR_MA35D1)
+#define TRNG_KS_OWNER_AES	0
+#define TRNG_KS_OWNER_HMAC	1
+#define TRNG_KS_OWNER_ECC	4
+#define TRNG_KS_OWNER_CPU	5
+#define TRNG_KS_256_SIZE	(0x6 << 8)
+#endif
+
 /*---------------------------------------------------------------------*/
 /*  MA35 Series TRNG registers                                         */
 /*---------------------------------------------------------------------*/
@@ -351,6 +359,53 @@ static TEE_Result ma35_trng_read(uint32_t types, TEE_Param params[TEE_NUM_PARAMS
 	return 0;
 }
 
+#if defined(PLATFORM_FLAVOR_MA35D1)
+static bool ma35_trng_ks_owner_is_valid(uint32_t owner)
+{
+	return owner == TRNG_KS_OWNER_AES || owner == TRNG_KS_OWNER_HMAC ||
+	       owner == TRNG_KS_OWNER_ECC || owner == TRNG_KS_OWNER_CPU;
+}
+
+static TEE_Result ma35_trng_write_ks(uint32_t types,
+				     TEE_Param params[TEE_NUM_PARAMS])
+{
+	uint32_t owner;
+	int key_num = -1;
+	int ret;
+
+	if (types != TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
+				     TEE_PARAM_TYPE_NONE,
+				     TEE_PARAM_TYPE_NONE,
+				     TEE_PARAM_TYPE_NONE))
+		return TEE_ERROR_BAD_PARAMETERS;
+
+	owner = params[0].value.a;
+	if (!ma35_trng_ks_owner_is_valid(owner)) {
+		EMSG("Unsupported TRNG key-store owner %u", owner);
+		return TEE_ERROR_BAD_PARAMETERS;
+	}
+
+	ret = TSI_TRNG_Gen_Random(4, TSI_CMD_BUFF_BASE);
+	if (ret != ST_SUCCESS) {
+		EMSG("TSI_TRNG_Gen_Random before KS write failed: 0x%x", ret);
+		tsi_print_err_code(ret);
+		return TEE_ERROR_TRNG_FAILED;
+	}
+
+	ret = TSI_PRNG_GenTo_KS_SRAM(owner, 0, 0, TRNG_KS_256_SIZE,
+				     &key_num);
+	if (ret != ST_SUCCESS) {
+		EMSG("TSI_PRNG_GenTo_KS_SRAM(owner=%u) failed: 0x%x",
+		     owner, ret);
+		tsi_print_err_code(ret);
+		return TEE_ERROR_TRNG_KS_FAILED;
+	}
+
+	params[0].value.a = key_num;
+	return TEE_SUCCESS;
+}
+#endif
+
 static TEE_Result invoke_command(void *pSessionContext __unused,
 				 uint32_t nCommandID, uint32_t nParamTypes,
 				 TEE_Param pParams[TEE_NUM_PARAMS])
@@ -361,6 +416,10 @@ static TEE_Result invoke_command(void *pSessionContext __unused,
 
 	case PTA_CMD_TRNG_READ:
 		return ma35_trng_read(nParamTypes, pParams);
+#if defined(PLATFORM_FLAVOR_MA35D1)
+	case PTA_CMD_TRNG_WRITE_KS:
+		return ma35_trng_write_ks(nParamTypes, pParams);
+#endif
 	default:
 		break;
 	}
