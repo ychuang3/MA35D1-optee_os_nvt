@@ -2,11 +2,11 @@
 
 ## Current Stage
 
-- Stage: P07 secure-SRAM crypto migration complete
+- Stage: P08 cascaded-SHA image update complete
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: port `4b165ce` (cascaded SHA TSI image update)
+- Next action: port `e2dbb45` (TRNG-backed key-store write command)
 
 ## Progress
 
@@ -19,7 +19,7 @@
 | All follow-up commits inventoried | PASS |
 | Dedicated migration branch created | PASS |
 | Root snapshot migrated | PASS |
-| Follow-up commits migrated | IN PROGRESS (6 migrated, 1 dropped, 6 pending) |
+| Follow-up commits migrated | IN PROGRESS (7 migrated, 1 dropped, 5 pending) |
 
 ## Validation
 
@@ -41,10 +41,11 @@
 - `8986272` — port `614e07f`; extended SHA commands and payload hash verified; all flavors build PASS.
 - `ea3523c` — port `5c70df0`; secure command buffer and TRNG changes; all flavors build PASS; MI-007 deferred.
 - `5a84660` — port `f48e55e`; AES/SHA secure SRAM and NS DRAM mapping; all flavors build PASS; MI-008 deferred.
+- `90e8478` — port `4b165ce`; cascaded-SHA image payload hash verified; all flavors build PASS.
 
 ## Next Actions
 
-1. Port `4b165ce` and verify the cascaded-SHA TSI image payload.
+1. Port `e2dbb45` and review TRNG-to-key-store ownership and buffer use.
 2. Preserve MI-007 for review after complete porting and successful bring-up.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.
