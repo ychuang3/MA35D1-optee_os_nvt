@@ -81,11 +81,15 @@
   `phys_to_virt()` request a fixed 1 MiB span rather than the actual operation
   length.
 - Analysis: P13 adds AES input/output bounds, but the final source still has no
-  equivalent SHA bound and retains the fixed mapping length. The NS mapping ends
-  at `CFG_TZDRAM_START`; static review found no overlap with secure TZDRAM.
+  equivalent SHA bound and retains the fixed mapping length. P13's final
+  cascaded GCM/CCM DMA may copy `AES_CNT + 16` bytes to a normal-world physical
+  destination whose actual allocation size is not available to the PTA, and TSI
+  output is copied before its return status is checked. The NS mapping ends at
+  `CFG_TZDRAM_START`; static review found no overlap with secure TZDRAM.
 - Decision: preserve historical behavior for the migration. Review SHA bounds
   and mapping-length validation after full porting, bring-up, and basic tests.
-- Status: DEFERRED; this is not a claim that the current behavior is safe.
+- Status: DEFERRED; P13 was migrated as `d129405`. This is not a claim that the
+  remaining behavior is safe.
 
 ## MI-009: P10 TSI monitor range and lifecycle are undocumented
 

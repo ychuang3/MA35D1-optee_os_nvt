@@ -24,6 +24,10 @@ Keep `core/arch/arm/plat-ma35` and migrate one original commit at a time. Adapt 
 4. After each patch, inspect the diff, run static checks, compile affected flavors, and update tracking documents.
 5. Perform boot and functional validation only when the board, firmware stack, client, and tests are available.
 
+The source-porting phase is complete: all 13 follow-up commits have a recorded
+disposition (12 migrated, one superseded and dropped). Hardware bring-up and
+functional validation remain pending.
+
 ## Validation Strategy
 
 - Static: review memory attributes, normal/secure boundaries, PTA parameters, physical-address conversions, cache maintenance, timeouts, and TSI synchronization.
