@@ -103,3 +103,20 @@
   behavior during migration. Confirm the range from MA35 documentation and test
   repeated initialization after complete porting and successful bring-up.
 - Status: DEFERRED; monitor coverage and lifecycle have not been hardware tested.
+
+## MI-010: OTP programming PTA lacks an explicit authorization policy
+
+- Affected patch: `c6babbe2e7fe55d0403e2a65fac8c9d603a010dc`, migrated as
+  `063d465`; P12 extends the same command to non-TSI systems.
+- Symptom: the device-enumerated key-store PTA exposes an irreversible OTP
+  programming command. It validates the parameter type, aligned address ranges,
+  and one-hot bit mask, but has no explicit caller authorization, version-update
+  policy, confirmation mechanism, or read-back verification.
+- Analysis: the allowed ranges are documented as version counters, which limits
+  impact, but any normal-world client able to open the PTA can request permitted
+  bits to be burned. Adding authorization or a monotonic version policy could
+  change the deployed provisioning/update workflow and cannot be inferred safely.
+- Decision: preserve the historical PTA interface and validation during
+  migration. Do not execute OTP programming as part of automated validation.
+  Review the intended caller and lifecycle policy after successful bring-up.
+- Status: DEFERRED; compilation passed, destructive hardware behavior NOT TESTED.
