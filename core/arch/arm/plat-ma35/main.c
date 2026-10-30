@@ -36,9 +36,11 @@ register_phys_mem_pgdir(MEM_AREA_IO_SEC, WHC1_BASE, WHC1_REG_SIZE);
 #endif
 
 static struct nuvoton_uart_data console_data;
+static int tsi_image_loaded;
 
 void plat_console_init(void)
 {
+	tsi_image_loaded = 0;
 	nuvoton_uart_init(&console_data, CONSOLE_UART_BASE);
 	register_serial_console(&console_data.chip);
 }
@@ -74,12 +76,18 @@ int ma35d1_tsi_init(void)
 			}
 		}
 #ifdef LOAD_TSI_PATCH
-		ret = TSI_Load_Image((uint32_t)virt_to_phys(tsi_patch_image),
-				     sizeof(tsi_patch_image));
-		if (ret == 0)
-			EMSG("Load TSI image successful.\n");
-		else
-			EMSG("Load TSI image failed!! %d\n", ret);
+		if (!tsi_image_loaded) {
+			uint32_t patch_pa =
+				(uint32_t)virt_to_phys(tsi_patch_image);
+
+			ret = TSI_Load_Image(patch_pa, sizeof(tsi_patch_image));
+			if (ret == 0) {
+				EMSG("Load TSI image successful.\n");
+				tsi_image_loaded = 1;
+			} else {
+				EMSG("Load TSI image failed!! %d\n", ret);
+			}
+		}
 #endif
 	}
 	return 0;
