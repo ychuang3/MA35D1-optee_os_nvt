@@ -31,7 +31,7 @@ Boot and hardware functionality are not tested.
 | ID | Original commit | Purpose | Class | Depends on | Planned validation | Status |
 |---|---|---|---|---|---|---|
 | P01 | `77be1f8` | Load the TSI patch only when TSI hardware is present | ADAPT | R02, R04 | TSI and non-TSI build/review | DONE (`e704772`) |
-| P02 | `f70a4de` | Avoid repeated TSI initialization | KEEP | P01 | repeated-init review | PENDING |
+| P02 | `f70a4de` | Avoid repeated TSI initialization | DROP | P01 | history and non-TSI path review | DONE (superseded by P04) |
 | P03 | `5499943` | Update TSI patch and set its system tick | ADAPT | P01-P02 | patch hash, build | PENDING |
 | P04 | `526c775` | Track successful patch loading independently of TSI version | ADAPT | P03 | retry-path review | PENDING |
 | P05 | `614e07f` | Use extended SHA commands for multiple TSI sessions | ADAPT | P03-P04 | multi-session SHA test | PENDING |
@@ -45,3 +45,8 @@ Boot and hardware functionality are not tested.
 | P13 | `3780ac9` | Bound TSI AES buffers and support cascaded GCM/CCM | ADAPT | P07 | bounds and cascade tests | PENDING |
 
 No item is classified REDESIGN at inventory time. This will be revised if v4.11 compatibility or security review proves otherwise.
+
+P02 is not applied as a transient source commit. It probes TSI before checking
+whether hardware is present and can return before the patch image is loaded.
+P04 removes that probe and replaces it with explicit successful-image state,
+which preserves the intended no-repeat behavior without those regressions.

@@ -36,3 +36,14 @@
 - Analysis: changing these behaviors during a version migration could break deployed systems; copying them without bounds and access review could preserve vulnerabilities.
 - Proposed resolution: retain externally visible behavior, add only required validation and compatibility fixes, and stop for approval if security semantics must change.
 - Status: OPEN, under per-patch review.
+
+## MI-006: P02 probes TSI before hardware-presence check
+
+- Affected patch: `f70a4de49e2599b873c99a4c44f640e35e1aee81`.
+- Symptom: `TSI_Get_Version()` is called before `SYS_CHIPCFG.TSIEN` is checked;
+  an early success also skips loading the TSI patch image.
+- Analysis: later patch `526c775` removes this probe and tracks successful image
+  loading explicitly. The final v4.2 source therefore does not retain P02's
+  implementation.
+- Resolution: classify P02 as DROP and port P04's replacement separately.
+- Status: RESOLVED; no known-broken intermediate source commit created.
