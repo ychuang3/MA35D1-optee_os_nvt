@@ -67,4 +67,5 @@
   serialization, and failure ordering only after all patches are ported and the
   platform passes bring-up and basic functional testing.
 - Status: DEFERRED; tracked for post-bring-up security review. This is not a
-  claim that the behavior is safe.
+  claim that the behavior is safe. Historical behavior was migrated in
+  `ea3523c`.

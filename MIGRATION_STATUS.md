@@ -2,11 +2,11 @@
 
 ## Current Stage
 
-- Stage: P06 secure-SRAM migration in progress
+- Stage: P06 complete; P07 secure-SRAM crypto migration next
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: port P06 faithfully; defer MI-007 remediation until post-bring-up review
+- Next action: port `f48e55e` (AES/SHA secure-SRAM buffers and NS DRAM mapping)
 
 ## Progress
 
@@ -19,7 +19,7 @@
 | All follow-up commits inventoried | PASS |
 | Dedicated migration branch created | PASS |
 | Root snapshot migrated | PASS |
-| Follow-up commits migrated | IN PROGRESS (4 migrated, 1 dropped, 8 pending) |
+| Follow-up commits migrated | IN PROGRESS (5 migrated, 1 dropped, 7 pending) |
 
 ## Validation
 
@@ -39,10 +39,11 @@
 - `83d8263` — port `5499943`; payload hash verified; all flavors build PASS.
 - `7938f67` — port `526c775`; successful-load state and retry path reviewed; all flavors build PASS.
 - `8986272` — port `614e07f`; extended SHA commands and payload hash verified; all flavors build PASS.
+- `ea3523c` — port `5c70df0`; secure command buffer and TRNG changes; all flavors build PASS; MI-007 deferred.
 
 ## Next Actions
 
-1. Port P06 without changing its historical bounds or concurrency behavior.
+1. Port `f48e55e` and review all secure/normal-world mappings and buffer ranges.
 2. Preserve MI-007 for review after complete porting and successful bring-up.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.
