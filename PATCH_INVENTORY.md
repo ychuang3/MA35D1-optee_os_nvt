@@ -41,7 +41,7 @@ Boot and hardware functionality are not tested.
 | P09 | `e2dbb45` | Generate a TRNG-backed key into key-store SRAM | ADAPT | P06-P08 | owner validation, KS test | DONE (`86f4f5f`; MI-007 deferred) |
 | P10 | `49ace8b` | Configure a TSI memory monitor | ADAPT | P03-P09 | monitored-range review | DONE (`ee13470`; MI-009 deferred) |
 | P11 | `c6babbe` | Add validated TSI OTP programming and correct OTP read sizing | ADAPT | R06, P03 | allowed-range and failure tests | DONE (`063d465`; MI-010 deferred) |
-| P12 | `69905c8` | Add direct OTP programming for non-TSI parts | ADAPT | P11 | non-TSI OTP test | PENDING |
+| P12 | `69905c8` | Add direct OTP programming for non-TSI parts | ADAPT | P11 | non-TSI OTP test | DONE (`3b6313b`; MI-010/MI-011 deferred) |
 | P13 | `3780ac9` | Bound TSI AES buffers and support cascaded GCM/CCM | ADAPT | P07 | bounds and cascade tests | PENDING |
 
 No item is classified REDESIGN at inventory time. This will be revised if v4.11 compatibility or security review proves otherwise.

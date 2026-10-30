@@ -120,3 +120,20 @@
   migration. Do not execute OTP programming as part of automated validation.
   Review the intended caller and lifecycle policy after successful bring-up.
 - Status: DEFERRED; compilation passed, destructive hardware behavior NOT TESTED.
+
+## MI-011: Direct OTP controller access is not serialized
+
+- Affected patch: `69905c848c8c1e16fff9da07d47c07ec26a4b14c`, migrated as
+  `3b6313b`.
+- Symptom: the non-TSI OTP read and program paths share controller address,
+  data, control, and status registers without a software lock. The program path
+  clears status and writes a new command without first rejecting an already-busy
+  controller.
+- Analysis: concurrent PTA invocations could interleave register sequences or
+  clear another operation's status. Whether the current OP-TEE invocation model
+  serializes this PTA sufficiently has not been established. Adding a lock or
+  pre-command BUSY handling changes timing and concurrency behavior.
+- Decision: preserve the historical direct-controller sequence during migration.
+  Review serialization and BUSY handling after bring-up; do not exercise
+  concurrent or destructive OTP tests until the intended policy is confirmed.
+- Status: DEFERRED; compilation passed, direct OTP hardware behavior NOT TESTED.

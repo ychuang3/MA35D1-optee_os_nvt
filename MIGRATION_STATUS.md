@@ -2,11 +2,11 @@
 
 ## Current Stage
 
-- Stage: P11 TSI OTP programming support complete
+- Stage: P12 direct OTP programming support complete
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: port `69905c8` (direct OTP programming for non-TSI systems)
+- Next action: port `3780ac9` (bounded and cascaded AES GCM/CCM)
 
 ## Progress
 
@@ -19,18 +19,18 @@
 | All follow-up commits inventoried | PASS |
 | Dedicated migration branch created | PASS |
 | Root snapshot migrated | PASS |
-| Follow-up commits migrated | IN PROGRESS (10 migrated, 1 dropped, 2 pending) |
+| Follow-up commits migrated | IN PROGRESS (11 migrated, 1 dropped, 1 pending) |
 
 ## Validation
 
 | Level | Result | Notes |
 |---|---|---|
 | Static inventory | PASS | 22 root paths and 13 follow-up commits accounted for |
-| v4.11 API compatibility | PASS | P11 required style-only adaptation; OTP byte-size and command semantics were preserved |
+| v4.11 API compatibility | PASS | P12 direct OTP register flow required no v4.11 API adaptation |
 | Compilation | PASS | MA35D1, MA35D0 and MA35H0 built with GCC 12.3.0 and `CFG_WERROR=y` |
 | Boot | NOT TESTED | No board or boot log used yet |
 | Functional | NOT TESTED | No `xtest`, crypto, TRNG, key-store or OTP execution yet |
-| Checkpatch | PASS | P11: 0 errors, 0 warnings and 0 checks |
+| Checkpatch | PASS | P12: 0 errors, 0 warnings and 0 checks |
 
 ## Completed Commits
 
@@ -45,10 +45,11 @@
 - `86f4f5f` — port `e2dbb45`; TRNG key-store write command and extended TSI PRNG command; payload hash verified; all flavors build PASS; MI-007 remains deferred.
 - `ee13470` — port `49ace8b`; configure the MA35D1 TSI memory monitor; all flavors build PASS; MI-009 deferred.
 - `063d465` — port `c6babbe`; validated TSI OTP programming and corrected OTP read sizing; all flavors build PASS; MI-010 deferred.
+- `3b6313b` — port `69905c8`; direct OTP programming for non-TSI systems; all flavors build PASS; MI-010 and MI-011 deferred.
 
 ## Next Actions
 
-1. Port `69905c8` and review direct OTP programming for non-TSI systems.
-2. Preserve MI-007 through MI-010 for review after complete porting and successful bring-up.
+1. Port `3780ac9` and review AES bounds and cascaded GCM/CCM semantics.
+2. Preserve MI-007 through MI-011 for review after complete porting and successful bring-up.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.
