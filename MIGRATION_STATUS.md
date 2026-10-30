@@ -6,7 +6,7 @@
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: port `614e07f` (multi-session SHA command fix)
+- Next action: port `5c70df0` (secure-SRAM TSI command data and TRNG fix)
 
 ## Progress
 
@@ -19,7 +19,7 @@
 | All follow-up commits inventoried | PASS |
 | Dedicated migration branch created | PASS |
 | Root snapshot migrated | PASS |
-| Follow-up commits migrated | IN PROGRESS (3 migrated, 1 dropped, 9 pending) |
+| Follow-up commits migrated | IN PROGRESS (4 migrated, 1 dropped, 8 pending) |
 
 ## Validation
 
@@ -38,10 +38,11 @@
 - `e704772` — port `77be1f8`; conditional TSI patch loading; all flavors build PASS.
 - `83d8263` — port `5499943`; payload hash verified; all flavors build PASS.
 - `7938f67` — port `526c775`; successful-load state and retry path reviewed; all flavors build PASS.
+- `8986272` — port `614e07f`; extended SHA commands and payload hash verified; all flavors build PASS.
 
 ## Next Actions
 
-1. Port `614e07f` and review SHA session command compatibility.
+1. Port `5c70df0` and review secure-SRAM mappings, cache handling, and TRNG reads.
 2. Continue reviewing both TSI and non-TSI paths without changing external repositories.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.
