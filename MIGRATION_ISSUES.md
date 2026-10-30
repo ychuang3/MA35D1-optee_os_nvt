@@ -48,3 +48,20 @@
 - Resolution: classify P02 as DROP and port P04's replacement separately.
 - Status: RESOLVED; replacement ported as `7938f67`, with no known-broken
   intermediate source commit.
+
+## MI-007: P06 fixed secure-SRAM buffer lacks bounds and serialization
+
+- Affected patch: `5c70df00ffcbf43ac91392b7d45b14f7edbf1cdd`.
+- Symptom: the TRNG PTA passes caller-controlled `rq_size` to an 8 KiB fixed
+  buffer at `0x28023000` without an upper bound. AES and TRNG also share this
+  buffer without cross-PTA serialization, and TRNG copies output before checking
+  the TSI command result.
+- Analysis: requests larger than `TSI_CMD_BUFF_SIZE` can make TSI write beyond
+  the registered secure SRAM region. Concurrent AES/TRNG operations can overwrite
+  each other's command data. The final v4.2 source does not correct these cases.
+- Proposed resolution: process TRNG output in bounded chunks, serialize every
+  transaction using the shared command buffer, and copy output only after command
+  success. This preserves arbitrary-length requests but changes synchronization
+  and failure behavior relative to the historical patch.
+- Status: OPEN; source migration paused pending approval of the security behavior
+  change.

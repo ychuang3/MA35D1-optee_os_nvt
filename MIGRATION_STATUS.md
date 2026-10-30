@@ -2,11 +2,11 @@
 
 ## Current Stage
 
-- Stage: initial platform snapshot migrated; follow-up patch migration started
+- Stage: P06 secure-SRAM migration under security review
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: port `5c70df0` (secure-SRAM TSI command data and TRNG fix)
+- Next action: decide P06 bounds and shared-buffer serialization policy
 
 ## Progress
 
@@ -42,7 +42,7 @@
 
 ## Next Actions
 
-1. Port `5c70df0` and review secure-SRAM mappings, cache handling, and TRNG reads.
-2. Continue reviewing both TSI and non-TSI paths without changing external repositories.
+1. Resolve MI-007 before modifying the P06 source paths.
+2. Port P06 with the approved bounds and concurrency behavior.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.
