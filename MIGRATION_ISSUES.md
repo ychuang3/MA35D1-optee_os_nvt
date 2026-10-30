@@ -69,3 +69,18 @@
 - Status: DEFERRED; tracked for post-bring-up security review. This is not a
   claim that the behavior is safe. Historical behavior was migrated in
   `ea3523c`.
+
+## MI-008: P07 SHA buffer and normal-memory mapping assumptions
+
+- Affected patch: `f48e55ee1302d7b437f0a896c1ea7bebed8e5c69`, migrated as
+  `5a84660`.
+- Symptom: caller-controlled SHA data length is copied into a fixed 32 KiB
+  secure-SRAM buffer without a bound. AES has the same issue at P07. Calls to
+  `phys_to_virt()` request a fixed 1 MiB span rather than the actual operation
+  length.
+- Analysis: P13 adds AES input/output bounds, but the final source still has no
+  equivalent SHA bound and retains the fixed mapping length. The NS mapping ends
+  at `CFG_TZDRAM_START`; static review found no overlap with secure TZDRAM.
+- Decision: preserve historical behavior for the migration. Review SHA bounds
+  and mapping-length validation after full porting, bring-up, and basic tests.
+- Status: DEFERRED; this is not a claim that the current behavior is safe.
