@@ -63,5 +63,8 @@
   transaction using the shared command buffer, and copy output only after command
   success. This preserves arbitrary-length requests but changes synchronization
   and failure behavior relative to the historical patch.
-- Status: OPEN; source migration paused pending approval of the security behavior
-  change.
+- Decision: preserve the historical behavior during migration. Revisit bounds,
+  serialization, and failure ordering only after all patches are ported and the
+  platform passes bring-up and basic functional testing.
+- Status: DEFERRED; tracked for post-bring-up security review. This is not a
+  claim that the behavior is safe.

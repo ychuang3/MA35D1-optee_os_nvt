@@ -2,11 +2,11 @@
 
 ## Current Stage
 
-- Stage: P06 secure-SRAM migration under security review
+- Stage: P06 secure-SRAM migration in progress
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: decide P06 bounds and shared-buffer serialization policy
+- Next action: port P06 faithfully; defer MI-007 remediation until post-bring-up review
 
 ## Progress
 
@@ -42,7 +42,7 @@
 
 ## Next Actions
 
-1. Resolve MI-007 before modifying the P06 source paths.
-2. Port P06 with the approved bounds and concurrency behavior.
+1. Port P06 without changing its historical bounds or concurrency behavior.
+2. Preserve MI-007 for review after complete porting and successful bring-up.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.

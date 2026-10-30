@@ -35,7 +35,7 @@ Boot and hardware functionality are not tested.
 | P03 | `5499943` | Update TSI patch and set its system tick | ADAPT | P01 | patch hash, build | DONE (`83d8263`) |
 | P04 | `526c775` | Track successful patch loading independently of TSI version | ADAPT | P03 | retry-path review | DONE (`7938f67`) |
 | P05 | `614e07f` | Use extended SHA commands for multiple TSI sessions | ADAPT | P03-P04 | multi-session SHA test | DONE (`8986272`) |
-| P06 | `5c70df0` | Move TSI command data to secure SRAM and fix TRNG reads | ADAPT | P05 | mappings, bounds, concurrency, TRNG test | BLOCKED (security decision) |
+| P06 | `5c70df0` | Move TSI command data to secure SRAM and fix TRNG reads | ADAPT | P05 | mappings, bounds, concurrency, TRNG test | IN PROGRESS (MI-007 deferred) |
 | P07 | `f48e55e` | Move AES/SHA TSI buffers to secure SRAM and map NS DRAM | ADAPT | P06 | boundary/cache review, crypto test | PENDING |
 | P08 | `4b165ce` | Update TSI patch for cascaded SHA correctness | KEEP | P05-P07 | patch hash, cascade SHA test | PENDING |
 | P09 | `e2dbb45` | Generate a TRNG-backed key into key-store SRAM | ADAPT | P06-P08 | owner validation, KS test | PENDING |
