@@ -2,11 +2,11 @@
 
 ## Current Stage
 
-- Stage: P09 TRNG-backed key-store write command complete
+- Stage: P10 TSI memory monitor command complete
 - Branch: `ma35d1-v4.11-migration`
 - Source: MA35 snapshot `1736f59` plus 13 follow-up commits through `3780ac9`
 - Target: OP-TEE OS `4.11.0`, upstream commit `f54190f22611dd5ad5d22546fd4209aa100f56bd`
-- Next action: port `49ace8b` (TSI memory monitor command)
+- Next action: port `c6babbe` (TSI OTP programming support)
 
 ## Progress
 
@@ -19,18 +19,18 @@
 | All follow-up commits inventoried | PASS |
 | Dedicated migration branch created | PASS |
 | Root snapshot migrated | PASS |
-| Follow-up commits migrated | IN PROGRESS (8 migrated, 1 dropped, 4 pending) |
+| Follow-up commits migrated | IN PROGRESS (9 migrated, 1 dropped, 3 pending) |
 
 ## Validation
 
 | Level | Result | Notes |
 |---|---|---|
 | Static inventory | PASS | 22 root paths and 13 follow-up commits accounted for |
-| v4.11 API compatibility | PASS | P09 D1-only helper and constants are conditionally compiled so D0/H0 remain warning-free |
+| v4.11 API compatibility | PASS | P10 required no API adaptation; command format and MA35D1 call site were preserved |
 | Compilation | PASS | MA35D1, MA35D0 and MA35H0 built with GCC 12.3.0 and `CFG_WERROR=y` |
 | Boot | NOT TESTED | No board or boot log used yet |
 | Functional | NOT TESTED | No `xtest`, crypto, TRNG, key-store or OTP execution yet |
-| Checkpatch | PASS | P09: 0 errors; 304 firmware-array line-length warnings retained to preserve the payload |
+| Checkpatch | PASS | P10: 0 errors and 0 warnings |
 
 ## Completed Commits
 
@@ -43,10 +43,11 @@
 - `5a84660` — port `f48e55e`; AES/SHA secure SRAM and NS DRAM mapping; all flavors build PASS; MI-008 deferred.
 - `90e8478` — port `4b165ce`; cascaded-SHA image payload hash verified; all flavors build PASS.
 - `86f4f5f` — port `e2dbb45`; TRNG key-store write command and extended TSI PRNG command; payload hash verified; all flavors build PASS; MI-007 remains deferred.
+- `ee13470` — port `49ace8b`; configure the MA35D1 TSI memory monitor; all flavors build PASS; MI-009 deferred.
 
 ## Next Actions
 
-1. Port `49ace8b` and review the TSI memory-monitor range and access policy.
-2. Preserve MI-007 for review after complete porting and successful bring-up.
+1. Port `c6babbe` and review TSI OTP programming ranges and failure handling.
+2. Preserve MI-007 through MI-009 for review after complete porting and successful bring-up.
 3. Compile all affected flavors with `CFG_WERROR=y`.
 4. Record boot and functional validation as NOT TESTED until hardware is used.

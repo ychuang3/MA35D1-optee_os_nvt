@@ -86,3 +86,20 @@
 - Decision: preserve historical behavior for the migration. Review SHA bounds
   and mapping-length validation after full porting, bring-up, and basic tests.
 - Status: DEFERRED; this is not a claim that the current behavior is safe.
+
+## MI-009: P10 TSI monitor range and lifecycle are undocumented
+
+- Affected patch: `49ace8b639b6212d536b26c0cc65bb0cd9785efc`, migrated as
+  `ee13470`.
+- Symptom: `ma35d1_tsi_init()` requests a 4 KiB monitor at physical address
+  `0x28025000` on every invocation, ignores command failure, and does not retain
+  the returned monitor ID.
+- Analysis: the range begins immediately after the registered 0x25000-byte TSI
+  secure-SRAM buffer. No local BSP definition explains its ownership or purpose.
+  Since the TSI receives a physical range, lack of an OP-TEE virtual mapping is
+  not by itself proof of an error. Repeated successful initialization may consume
+  additional monitor slots until the TSI reports `ST_MON_FULL`.
+- Decision: preserve the historical address, interval, call placement, and error
+  behavior during migration. Confirm the range from MA35 documentation and test
+  repeated initialization after complete porting and successful bring-up.
+- Status: DEFERRED; monitor coverage and lifecycle have not been hardware tested.
