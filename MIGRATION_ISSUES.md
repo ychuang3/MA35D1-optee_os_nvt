@@ -46,4 +46,5 @@
   loading explicitly. The final v4.2 source therefore does not retain P02's
   implementation.
 - Resolution: classify P02 as DROP and port P04's replacement separately.
-- Status: RESOLVED; no known-broken intermediate source commit created.
+- Status: RESOLVED; replacement ported as `7938f67`, with no known-broken
+  intermediate source commit.

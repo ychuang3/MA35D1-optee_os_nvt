@@ -33,7 +33,7 @@ Boot and hardware functionality are not tested.
 | P01 | `77be1f8` | Load the TSI patch only when TSI hardware is present | ADAPT | R02, R04 | TSI and non-TSI build/review | DONE (`e704772`) |
 | P02 | `f70a4de` | Avoid repeated TSI initialization | DROP | P01 | history and non-TSI path review | DONE (superseded by P04) |
 | P03 | `5499943` | Update TSI patch and set its system tick | ADAPT | P01 | patch hash, build | DONE (`83d8263`) |
-| P04 | `526c775` | Track successful patch loading independently of TSI version | ADAPT | P03 | retry-path review | PENDING |
+| P04 | `526c775` | Track successful patch loading independently of TSI version | ADAPT | P03 | retry-path review | DONE (`7938f67`) |
 | P05 | `614e07f` | Use extended SHA commands for multiple TSI sessions | ADAPT | P03-P04 | multi-session SHA test | PENDING |
 | P06 | `5c70df0` | Move TSI command data to secure SRAM and fix TRNG reads | ADAPT | P05 | mappings, TRNG test | PENDING |
 | P07 | `f48e55e` | Move AES/SHA TSI buffers to secure SRAM and map NS DRAM | ADAPT | P06 | boundary/cache review, crypto test | PENDING |
