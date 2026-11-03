@@ -208,7 +208,7 @@ static TEE_Result tsi_aes_run(uint32_t types, TEE_Param params[TEE_NUM_PARAMS])
 
 run:
 	va_data_src = phys_to_virt(reg_map[AES_SADDR / 4],
-				   MEM_AREA_RAM_NSEC, 0x100000);
+				   MEM_AREA_RAM_NSEC, aes_cnt ? aes_cnt : 1);
 	if (!va_data_src) {
 		EMSG("phys_to_virt() failed for AES source 0x%x",
 		     reg_map[AES_SADDR / 4]);
@@ -216,7 +216,7 @@ run:
 	}
 
 	va_data_dst = phys_to_virt(reg_map[AES_DADDR / 4],
-				   MEM_AREA_RAM_NSEC, 0x100000);
+				   MEM_AREA_RAM_NSEC, out_len ? out_len : 1);
 	if (!va_data_dst) {
 		EMSG("phys_to_virt() failed for AES destination 0x%x",
 		     reg_map[AES_DADDR / 4]);
@@ -239,6 +239,8 @@ run:
 
 		ret = TSI_AES_GCM_Run(sid, aes_ctl & AES_CTL_DMALAST ? 1 : 0,
 				      aes_cnt, TSI_AES_PARAM_BASE);
+		if (ret != ST_SUCCESS)
+			return TEE_ERROR_CRYPTO_FAIL;
 
 		cache_operation(TEE_CACHEINVALIDATE, va_aes_buff, flush_len);
 		memcpy(va_data_dst, va_aes_buff, out_len);
@@ -249,14 +251,12 @@ run:
 		ret = TSI_AES_Run(sid, aes_ctl & AES_CTL_DMALAST ? 1 : 0,
 				  aes_cnt, TSI_AES_BUFF_BASE,
 				  TSI_AES_BUFF_BASE);
+		if (ret != ST_SUCCESS)
+			return TEE_ERROR_CRYPTO_FAIL;
 
 		cache_operation(TEE_CACHEINVALIDATE, va_aes_buff, aes_cnt);
 		memcpy(va_data_dst, va_aes_buff, aes_cnt);
 	}
-
-	if (ret != ST_SUCCESS)
-		return TEE_ERROR_CRYPTO_FAIL;
-
 
 	cache_operation(TEE_CACHEINVALIDATE, va_aes_buff, 64);
 
@@ -416,8 +416,11 @@ static TEE_Result tsi_sha_update(uint32_t types,
 
 	data_size = reg_map[HMAC_DMACNT / 4];
 	pa_data = (uint32_t)reg_map[HMAC_SADDR / 4];
+	if (data_size > TSI_SHA_BUFF_SIZE)
+		return TEE_ERROR_BAD_PARAMETERS;
 
-	va_data = phys_to_virt(pa_data, MEM_AREA_RAM_NSEC, 0x100000);
+	va_data = phys_to_virt(pa_data, MEM_AREA_RAM_NSEC,
+				    data_size ? data_size : 1);
 	if (!va_data) {
 		EMSG("phys_to_virt() failed for pa=0x%x", pa_data);
 		return TEE_ERROR_CRYPTO_FAIL;
@@ -458,8 +461,11 @@ static TEE_Result tsi_sha_final(uint32_t types,
 
 	data_size = reg_map[HMAC_DMACNT / 4];
 	pa_data = (paddr_t)reg_map[HMAC_SADDR / 4];
+	if (data_size > TSI_SHA_BUFF_SIZE)
+		return TEE_ERROR_BAD_PARAMETERS;
 
-	va_data = (vaddr_t)phys_to_virt(pa_data, MEM_AREA_RAM_NSEC, 0x100000);
+	va_data = (vaddr_t)phys_to_virt(pa_data, MEM_AREA_RAM_NSEC,
+					     data_size ? data_size : 1);
 	if (!va_data) {
 		EMSG("phys_to_virt() failed for pa=0x%x", (uint32_t)pa_data);
 		return TEE_ERROR_CRYPTO_FAIL;
