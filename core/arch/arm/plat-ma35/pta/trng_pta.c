@@ -5,6 +5,7 @@
  */
 #include <crypto/crypto.h>
 #include <kernel/delay.h>
+#include <kernel/mutex.h>
 #include <kernel/pseudo_ta.h>
 #include <kernel/spinlock.h>
 #include <kernel/timer.h>
@@ -16,6 +17,7 @@
 #include <io.h>
 #include <string.h>
 #include <trng_pta_client.h>
+#include <util.h>
 
 #define PTA_NAME "nvt_trng.pta"
 
@@ -28,6 +30,9 @@
 #define TRNG_KS_OWNER_ECC	4
 #define TRNG_KS_OWNER_CPU	5
 #define TRNG_KS_256_SIZE	(0x6 << 8)
+
+/* Serializes TSI output and key-store seeding through the command buffer. */
+static struct mutex tsi_trng_buffer_mutex = MUTEX_INITIALIZER;
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -299,13 +304,15 @@ static TEE_Result ma35_trng_init(uint32_t types, TEE_Param params[TEE_NUM_PARAMS
 static TEE_Result ma35_trng_read(uint32_t types, TEE_Param params[TEE_NUM_PARAMS])
 {
 	uint32_t *rdata = NULL;
-	uint32_t rq_size = 0, get_size = 0;
+	size_t rq_size = 0, get_size = 0;
 	vaddr_t trng_base = core_mmu_get_va(TRNG_BASE, MEM_AREA_IO_SEC, TRNG_REG_SIZE);
 #if defined(PLATFORM_FLAVOR_MA35D1)
 	vaddr_t va = core_mmu_get_va(TSI_CMD_BUFF_BASE, MEM_AREA_RAM_SEC,
 				    TSI_CMD_BUFF_SIZE);
 	vaddr_t sys_base = core_mmu_get_va(SYS_BASE, MEM_AREA_IO_SEC,
 					   SYS_REG_SIZE);
+	uint8_t *out = NULL;
+	size_t chunk_size = 0;
 #endif
 	int	i, ret;
 
@@ -327,15 +334,29 @@ static TEE_Result ma35_trng_read(uint32_t types, TEE_Param params[TEE_NUM_PARAMS
 #if defined(PLATFORM_FLAVOR_MA35D1)
 	if (!(io_read32(sys_base + SYS_CHIPCFG) & TSIEN)) {
 		/*
-		 * TSI enabled. Invoke TSI command and return here.
+		 * TSI enabled. Keep each command and its output within the fixed
+		 * SRAM buffer, including when the caller requests more than 8 KiB.
 		 */
-		cache_operation(TEE_CACHEINVALIDATE, (void *)va, rq_size);
-		ret = TSI_TRNG_Gen_Random(rq_size / 4, TSI_CMD_BUFF_BASE);
-		memcpy(rdata, (void *)va, rq_size);
-		if (ret != ST_SUCCESS)
-			return TEE_ERROR_TRNG_FAILED;
-
-		return 0;
+		out = (uint8_t *)rdata;
+		while (rq_size) {
+			chunk_size = MIN(rq_size, (size_t)TSI_CMD_BUFF_SIZE);
+			mutex_lock(&tsi_trng_buffer_mutex);
+			cache_operation(TEE_CACHEINVALIDATE, (void *)va,
+					chunk_size);
+			ret = TSI_TRNG_Gen_Random(chunk_size / 4,
+						  TSI_CMD_BUFF_BASE);
+			if (ret != ST_SUCCESS) {
+				mutex_unlock(&tsi_trng_buffer_mutex);
+				return TEE_ERROR_TRNG_FAILED;
+			}
+			cache_operation(TEE_CACHEINVALIDATE, (void *)va,
+					chunk_size);
+			memcpy(out, (void *)va, chunk_size);
+			mutex_unlock(&tsi_trng_buffer_mutex);
+			out += chunk_size;
+			rq_size -= chunk_size;
+		}
+		return TEE_SUCCESS;
 	}
 #endif
 	while (rq_size >= 4) {
@@ -372,6 +393,7 @@ static TEE_Result ma35_trng_write_ks(uint32_t types,
 	uint32_t owner;
 	int key_num = -1;
 	int ret;
+	TEE_Result res = TEE_SUCCESS;
 
 	if (types != TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
 				     TEE_PARAM_TYPE_NONE,
@@ -385,11 +407,13 @@ static TEE_Result ma35_trng_write_ks(uint32_t types,
 		return TEE_ERROR_BAD_PARAMETERS;
 	}
 
+	mutex_lock(&tsi_trng_buffer_mutex);
 	ret = TSI_TRNG_Gen_Random(4, TSI_CMD_BUFF_BASE);
 	if (ret != ST_SUCCESS) {
 		EMSG("TSI_TRNG_Gen_Random before KS write failed: 0x%x", ret);
 		tsi_print_err_code(ret);
-		return TEE_ERROR_TRNG_FAILED;
+		res = TEE_ERROR_TRNG_FAILED;
+		goto out_unlock;
 	}
 
 	ret = TSI_PRNG_GenTo_KS_SRAM(owner, 0, 0, TRNG_KS_256_SIZE,
@@ -398,11 +422,14 @@ static TEE_Result ma35_trng_write_ks(uint32_t types,
 		EMSG("TSI_PRNG_GenTo_KS_SRAM(owner=%u) failed: 0x%x",
 		     owner, ret);
 		tsi_print_err_code(ret);
-		return TEE_ERROR_TRNG_KS_FAILED;
+		res = TEE_ERROR_TRNG_KS_FAILED;
+		goto out_unlock;
 	}
 
 	params[0].value.a = key_num;
-	return TEE_SUCCESS;
+out_unlock:
+	mutex_unlock(&tsi_trng_buffer_mutex);
+	return res;
 }
 #endif
 
