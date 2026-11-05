@@ -115,6 +115,19 @@ static bool is_timeout(TEE_Time *t_start, uint32_t timeout)
 	return false;
 }
 
+static bool ma35_otp_wait_ready(vaddr_t otp_base)
+{
+	TEE_Time t_start;
+
+	tee_time_get_sys_time(&t_start);
+	while (io_read32(OTP_STS) & OTP_STS_BUSY) {
+		if (is_timeout(&t_start, 500))
+			return false;
+	}
+
+	return true;
+}
+
 static TEE_Result ma35_ks_init(void)
 {
 	vaddr_t ks_base = core_mmu_get_va(KS_BASE, MEM_AREA_IO_SEC, KS_REG_SIZE);
@@ -614,7 +627,6 @@ static TEE_Result ma35_otp_read(uint32_t types, TEE_Param params[TEE_NUM_PARAMS]
 	vaddr_t   otp_base = core_mmu_get_va(OTP_BASE, MEM_AREA_IO_SEC, OTP_REG_SIZE);
 	uint32_t  otp_addr, wcnt, i;
 	uint32_t  *key_buff;
-	TEE_Time  t_start;
 #if defined(PLATFORM_FLAVOR_MA35D1)
 	vaddr_t sys_base = core_mmu_get_va(SYS_BASE, MEM_AREA_IO_SEC,
 					   SYS_REG_SIZE);
@@ -655,15 +667,15 @@ static TEE_Result ma35_otp_read(uint32_t types, TEE_Param params[TEE_NUM_PARAMS]
 #endif
 
 	for (i = 0; i < wcnt; i++) {
+		if (!ma35_otp_wait_ready(otp_base))
+			return TEE_ERROR_OTP_FAIL;
+
 		io_write32(OTP_ADDR, otp_addr + i * 4);
 		io_write32(OTP_CTL, OTP_CMD_READ | OTP_CTL_START);
 
 		/* Waiting for OTP processing */
-		tee_time_get_sys_time(&t_start);
-		while (io_read32(OTP_STS) & OTP_STS_BUSY) {
-			if (is_timeout(&t_start, 500) == true)
-				return TEE_ERROR_OTP_FAIL;
-		}
+		if (!ma35_otp_wait_ready(otp_base))
+			return TEE_ERROR_OTP_FAIL;
 
 		if (io_read32(OTP_STS) & (OTP_STS_ADDRFF | OTP_STS_CMDFF)) {
 			EMSG("OTP read failed, status = 0x%x\n",
@@ -681,7 +693,6 @@ static TEE_Result ma35_otp_program(uint32_t types,
 {
 	vaddr_t otp_base = core_mmu_get_va(OTP_BASE, MEM_AREA_IO_SEC,
 					   OTP_REG_SIZE);
-	TEE_Time t_start;
 	uint32_t status;
 #if defined(PLATFORM_FLAVOR_MA35D1)
 	vaddr_t sys_base;
@@ -711,16 +722,16 @@ static TEE_Result ma35_otp_program(uint32_t types,
 	}
 #endif
 
+	if (!ma35_otp_wait_ready(otp_base))
+		return TEE_ERROR_OTP_FAIL;
+
 	io_write32(OTP_STS, OTP_STS_PFF | OTP_STS_ADDRFF | OTP_STS_CMDFF);
 	io_write32(OTP_ADDR, addr);
 	io_write32(OTP_DATA, bit);
 	io_write32(OTP_CTL, OTP_CMD_PROGRAM | OTP_CTL_START);
 
-	tee_time_get_sys_time(&t_start);
-	while (io_read32(OTP_STS) & OTP_STS_BUSY) {
-		if (is_timeout(&t_start, 500) == true)
-			return TEE_ERROR_OTP_FAIL;
-	}
+	if (!ma35_otp_wait_ready(otp_base))
+		return TEE_ERROR_OTP_FAIL;
 
 	status = io_read32(OTP_STS);
 	if (status & (OTP_STS_PFF | OTP_STS_ADDRFF | OTP_STS_CMDFF)) {
